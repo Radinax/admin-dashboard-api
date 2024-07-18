@@ -16,4 +16,7 @@ app.route("/", usersRoute);
 app.route("/orders", ordersRoute);
 app.route("/products", productsRoute);
 
-export default app;
+export default {
+  port: 5000,
+  fetch: app.fetch,
+};
