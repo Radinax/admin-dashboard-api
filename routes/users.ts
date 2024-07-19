@@ -29,7 +29,10 @@ router.get("/me", async (c) => {
     return c.body(null, 404);
   }
 
-  return c.json({ username: existingUser.username });
+  return c.json({
+    username: existingUser.username,
+    sessionId: existingUser.id,
+  });
 });
 
 router.post("/signup", zValidator("json", credentialsSchema), async (c) => {
@@ -60,7 +63,7 @@ router.post("/signin", zValidator("json", credentialsSchema), async (c) => {
   const passwordMatch = await Bun.password.verify(
     password,
     existingUser.password,
-    "argon2id",
+    "argon2id"
   );
 
   if (!passwordMatch) {
