@@ -57,6 +57,36 @@ bun drizzle-kit generate
 }
 ```
 
+Credentionals:
+
+```json
+{
+  "username": "Xanidar",
+  "email": "xanidar@xanidar.com",
+  "password": "Xanidar.9"
+}
+```
+
+Authorized user sending bad request:
+
+```json
+{
+  "success": false,
+  "error": {
+    "issues": [
+      {
+        "code": "invalid_type",
+        "expected": "number",
+        "received": "string",
+        "path": ["price"],
+        "message": "Expected number, received string"
+      }
+    ],
+    "name": "ZodError"
+  }
+}
+```
+
 Article writen by me explaining the code: https://adrian-beria-blog.netlify.app/blog/69_creating-a-backend-with-bun-and-hono/
 
 This project was created using `bun init` in bun v1.1.12. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.

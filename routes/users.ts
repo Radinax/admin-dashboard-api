@@ -4,7 +4,7 @@ import { z } from "zod";
 import { db } from "../db";
 import { getCookie, setCookie } from "hono/cookie";
 import { users } from "../db/schema";
-import type { CustomError } from "../utils/error-type";
+import type { CustomError } from "../types/error";
 
 const router = new Hono();
 

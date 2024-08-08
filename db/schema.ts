@@ -2,6 +2,7 @@ import cuid from "cuid";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import type { InferSelectModel } from "drizzle-orm";
 import { float } from "../utils/sqlite-float";
+import { type ProductType } from "../types/product";
 
 export const users = sqliteTable("user", {
   id: text("id")
@@ -17,7 +18,7 @@ export const products = sqliteTable("product", {
     .primaryKey()
     .$defaultFn(() => cuid()),
   name: text("name").notNull(),
-  type: text("type").notNull(),
+  type: text("type").$type<ProductType>(),
   price: float("price"),
   description: text("description"),
 });
