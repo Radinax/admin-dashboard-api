@@ -15,6 +15,20 @@
       "when": 1721233081452,
       "tag": "0001_clammy_ronan",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1723085908002,
+      "tag": "0002_curious_masked_marvel",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1723085955117,
+      "tag": "0003_chemical_swordsman",
+      "breakpoints": true
     }
   ]
 }

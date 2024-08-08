@@ -1,23 +1,7 @@
 import cuid from "cuid";
-import {
-  customType,
-  integer,
-  sqliteTable,
-  text,
-} from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import type { InferSelectModel } from "drizzle-orm";
-
-const float = customType<{ data: number; driverData: string }>({
-  dataType() {
-    return "decimal";
-  },
-  fromDriver(value) {
-    return parseFloat(value);
-  },
-  toDriver(value) {
-    return String(value);
-  },
-});
+import { float } from "../utils/sqlite-float";
 
 export const users = sqliteTable("user", {
   id: text("id")
@@ -25,6 +9,7 @@ export const users = sqliteTable("user", {
     .$defaultFn(() => cuid()),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  email: text("email").notNull().unique(),
 });
 
 export const products = sqliteTable("product", {

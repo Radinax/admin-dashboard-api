@@ -20,6 +20,43 @@ To run initial migrations:
 bun drizzle-kit generate
 ```
 
+```json
+// Error example
+
+{
+  "success": false,
+  "error": {
+    "issues": [
+      {
+        "validation": "email",
+        "code": "invalid_string",
+        "message": "Invalid email address",
+        "path": ["email"]
+      },
+      {
+        "validation": "regex",
+        "code": "invalid_string",
+        "message": "Password must contain at least one uppercase letter",
+        "path": ["password"]
+      },
+      {
+        "validation": "regex",
+        "code": "invalid_string",
+        "message": "Password must contain at least one number",
+        "path": ["password"]
+      },
+      {
+        "validation": "regex",
+        "code": "invalid_string",
+        "message": "Password must contain at least one special character",
+        "path": ["password"]
+      }
+    ],
+    "name": "ZodError"
+  }
+}
+```
+
 Article writen by me explaining the code: https://adrian-beria-blog.netlify.app/blog/69_creating-a-backend-with-bun-and-hono/
 
 This project was created using `bun init` in bun v1.1.12. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
