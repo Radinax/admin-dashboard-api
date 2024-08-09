@@ -1,33 +1,12 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { z } from "zod";
 import { db } from "../db";
 import { getCookie, setCookie } from "hono/cookie";
 import { users } from "../db/schema";
 import type { CustomError } from "../types/error";
+import { userSchema } from "../schema";
 
 const router = new Hono();
-
-const credentialsSchema = z.object({
-  username: z
-    .string()
-    .min(3, "Username must be at least 3 characters long")
-    .max(20, "Username must not exceed 20 characters")
-    .regex(
-      /^[a-zA-Z0-9_]+$/,
-      "Username can only contain letters, numbers, and underscores"
-    ),
-
-  email: z.string().email("Invalid email address"), // Validates email format
-
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters long")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number")
-    .regex(/[\W_]/, "Password must contain at least one special character"),
-});
 
 /**
  * @api     GET /me
@@ -63,7 +42,7 @@ router.get("/me", async (c) => {
  * @desc    Register user
  * @access  Public
  */
-router.post("/signup", zValidator("json", credentialsSchema), async (c) => {
+router.post("/signup", zValidator("json", userSchema), async (c) => {
   const { username, password, email } = c.req.valid("json");
   const hashedPassword = await Bun.password.hash(password, "argon2id");
 
@@ -94,7 +73,7 @@ router.post("/signup", zValidator("json", credentialsSchema), async (c) => {
  * @desc    Login user
  * @access  Public
  */
-router.post("/signin", zValidator("json", credentialsSchema), async (c) => {
+router.post("/signin", zValidator("json", userSchema), async (c) => {
   const { username, password, email } = c.req.valid("json");
   const existingUser = await db.query.users.findFirst({
     where(fields, { eq }) {

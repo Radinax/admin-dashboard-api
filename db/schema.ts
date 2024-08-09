@@ -3,6 +3,7 @@ import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import type { InferSelectModel } from "drizzle-orm";
 import { float } from "../utils/sqlite-float";
 import { type ProductType } from "../types/product";
+import { OrderStatus } from "../schema";
 
 export const users = sqliteTable("user", {
   id: text("id")
@@ -22,11 +23,6 @@ export const products = sqliteTable("product", {
   price: float("price"),
   description: text("description"),
 });
-
-export enum OrderStatus {
-  InProcess = "in_process",
-  Completed = "completed",
-}
 
 export const orders = sqliteTable("order", {
   id: text("id")

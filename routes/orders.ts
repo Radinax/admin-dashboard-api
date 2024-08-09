@@ -1,35 +1,15 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { getCookie } from "hono/cookie";
-import { z } from "zod";
 import { db } from "../db";
-import { OrderStatus, orders, type Order } from "../db/schema";
-import { streamSSE } from "hono/streaming";
-import pubsub from "../pubsub";
-
-type Bus = {
-  orderAdded: [order: Order];
-};
+import { orders } from "../db/schema";
+import pubsub from "../utils/pubsub";
+import { createOrderSchema } from "../schema";
+import type { Bus } from "../types/bus";
 
 const [pub, sub] = pubsub<Bus>();
 
 const router = new Hono();
-
-const orderSchema = z.object({
-  id: z.string(),
-  date: z.coerce.date(),
-  stock: z.string(),
-  type: z.string(),
-  status: z.nativeEnum(OrderStatus),
-  quantity: z.number(),
-  price: z.number(),
-});
-
-const createOrderSchema = orderSchema.pick({
-  stock: true,
-  quantity: true,
-  price: true,
-});
 
 router.get("/", async (c) => {
   const orders = await db.query.orders.findMany({});
@@ -62,7 +42,7 @@ router.get("/sse", async (c) => {
       unsubscribe?.();
       controller?.close();
     },
-    { once: true },
+    { once: true }
   );
 
   return c.body(stream, {
