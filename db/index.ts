@@ -5,8 +5,12 @@ import { join } from "node:path";
 import * as schema from "./schema";
 
 const sqlite = new Database("sqlite.db");
+
+// Enable WAL mode
+sqlite.exec("PRAGMA journal_mode = WAL;");
+
 export const db = drizzle(sqlite, { schema, logger: true });
 
 export function migrate() {
-  migrator(db, { migrationsFolder: join(import.meta.dirname, "migrations") });
+	migrator(db, { migrationsFolder: join(import.meta.dirname, "migrations") });
 }
