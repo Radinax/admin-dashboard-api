@@ -20,6 +20,8 @@ To run initial migrations:
 bun drizzle-kit generate
 ```
 
+## Common error responses
+
 ```json
 // Error example
 
@@ -54,16 +56,6 @@ bun drizzle-kit generate
     ],
     "name": "ZodError"
   }
-}
-```
-
-Credentionals:
-
-```json
-{
-  "username": "Xanidar",
-  "email": "xanidar@xanidar.com",
-  "password": "Xanidar.9"
 }
 ```
 

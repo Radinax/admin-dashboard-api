@@ -74,7 +74,7 @@ router.post("/signup", zValidator("json", userSchema), async (c) => {
  * @access  Public
  */
 router.post("/signin", zValidator("json", userSchema), async (c) => {
-  const { username, password, email } = c.req.valid("json");
+  const { password, email } = c.req.valid("json");
   const existingUser = await db.query.users.findFirst({
     where(fields, { eq }) {
       return eq(fields.email, email);
@@ -102,7 +102,10 @@ router.post("/signin", zValidator("json", userSchema), async (c) => {
     maxAge: 86400,
   });
 
-  return c.json({ username, email, id: existingUser.id }, 204);
+  return c.json(
+    { username: existingUser.username, email, id: existingUser.id },
+    204
+  );
 });
 
 export default router;
