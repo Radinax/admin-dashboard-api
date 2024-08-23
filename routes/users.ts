@@ -1,10 +1,11 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { db } from "../db";
-import { getCookie, setCookie } from "hono/cookie";
+import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import { users } from "../db/schema";
 import type { CustomError } from "../types/error";
 import { userSchema } from "../schema";
+import { HttpStatusCode } from "../types/http-code.enum";
 
 const router = new Hono();
 
@@ -17,7 +18,7 @@ router.get("/me", async (c) => {
   const userId = getCookie(c, "session");
 
   if (!userId) {
-    return c.body("User not found", 404);
+    return c.body("User not found", HttpStatusCode.NotFound);
   }
 
   const existingUser = await db.query.users.findFirst({
@@ -27,7 +28,7 @@ router.get("/me", async (c) => {
   });
 
   if (!existingUser) {
-    return c.body("User already exists", 404);
+    return c.body("User already exists", HttpStatusCode.NotFound);
   }
 
   return c.json({
@@ -53,18 +54,18 @@ router.post("/signup", zValidator("json", userSchema), async (c) => {
   });
 
   if (existingEmail) {
-    return c.body("Email is already on use", 404);
+    return c.body("Email is already on use", HttpStatusCode.NotFound);
   }
 
   try {
     await db
       .insert(users)
-      .values({ username, password: hashedPassword, email });
-    return c.body("User created successfully", 201);
+      .values({ username: username ?? email, password: hashedPassword, email });
+    return c.body("User created successfully", HttpStatusCode.Created);
   } catch (err) {
     console.error(err);
     const error = err as CustomError;
-    return c.body(error.message, 500);
+    return c.body(error.message, HttpStatusCode.InternalServerError);
   }
 });
 
@@ -82,7 +83,7 @@ router.post("/signin", zValidator("json", userSchema), async (c) => {
   });
 
   if (!existingUser) {
-    return c.body("User input is not valid", 404);
+    return c.body("User input is not valid", HttpStatusCode.NotFound);
   }
 
   const passwordMatch = await Bun.password.verify(
@@ -92,7 +93,7 @@ router.post("/signin", zValidator("json", userSchema), async (c) => {
   );
 
   if (!passwordMatch) {
-    return c.body("User input is not valid", 404);
+    return c.body("User input is not valid", HttpStatusCode.NotFound);
   }
 
   setCookie(c, "session", existingUser.id, {
@@ -104,8 +105,28 @@ router.post("/signin", zValidator("json", userSchema), async (c) => {
 
   return c.json(
     { username: existingUser.username, email, id: existingUser.id },
-    204
+    HttpStatusCode.Created
   );
+});
+
+/**
+ * @api     POST /logout
+ * @desc    Logout user
+ * @access  Public
+ */
+router.post("/signout", async (c) => {
+  // Get the session cookie
+  const sessionCookie = getCookie(c, "session");
+
+  if (!sessionCookie) {
+    return c.body("No session found", 404);
+  }
+
+  // Delete the session cookie
+  deleteCookie(c, "session");
+
+  // Return a success response
+  return c.json({ message: "Logged out successfully" }, HttpStatusCode.OK);
 });
 
 export default router;

@@ -76,8 +76,8 @@ export const warehouses = sqliteTable("warehouse", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => cuid()),
-  name: text("name").notNull(),
-  location: point("location").notNull(),
+  name: text("name"),
+  location: point("location"),
 });
 
 /**
@@ -88,11 +88,11 @@ export const usersWarehouses = sqliteTable(
   {
     userId: text("user_id")
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+      .references(() => users.id),
 
     warehouseId: text("warehouse_id")
       .notNull()
-      .references(() => warehouses.id, { onDelete: "cascade" }),
+      .references(() => warehouses.id),
 
     permission: text("permission").$type<Permission>().notNull(),
   },

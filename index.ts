@@ -4,6 +4,7 @@ import { migrate } from "./db";
 import usersRoute from "./routes/users";
 import ordersRoute from "./routes/orders";
 import productsRoute from "./routes/products";
+import { cors } from "hono/cors";
 
 // Apply migrations
 migrate();
@@ -11,6 +12,17 @@ migrate();
 const app = new Hono();
 
 app.use(logger());
+
+app.use(
+  "*",
+  cors({
+    origin: "http://localhost:5173", // Change to ENV
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    exposeHeaders: ["Content-Length"],
+    maxAge: 86400,
+  })
+);
 
 app.route("/", usersRoute);
 app.route("/orders", ordersRoute);

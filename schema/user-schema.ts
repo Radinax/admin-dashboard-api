@@ -8,7 +8,8 @@ export const userSchema = z.object({
     .regex(
       /^[a-zA-Z0-9_]+$/,
       "Username can only contain letters, numbers, and underscores"
-    ),
+    )
+    .optional(),
 
   email: z.string().email("Invalid email address"), // Validates email format
 
