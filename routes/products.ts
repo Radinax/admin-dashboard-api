@@ -28,7 +28,7 @@ router.post("/create", zValidator("json", productSchema), async (c) => {
     // Insert product into the database
     const [product] = await db
       .insert(products)
-      .values({ id: userId, name, type, price, description })
+      .values({ name, type, price, description })
       .returning();
 
     return c.json(product, 201);
@@ -91,6 +91,36 @@ router.get("/:id", async (c) => {
 
     // Return the product by ID with a 200 status
     return c.json(product, 200);
+  } catch (err) {
+    // Log the error for debugging
+    console.error("Error fetching product:", err);
+    return c.text("Error fetching product", 500);
+  }
+});
+
+/**
+ * @api     DELETE /products/:id
+ * @desc    DELETE product by id
+ * @access  Private
+ */
+router.get("/:id", async (c) => {
+  const userId = getCookie(c, "session");
+  const productId = c.req.param("id"); // Retrieve the product ID from the URL parameters
+
+  try {
+    // Validate userId
+    if (!userId) {
+      return c.text("User not authenticated", 401);
+    }
+    if (!productId) {
+      return c.text("Invalid product ID format", 400);
+    }
+
+    // Fetch all products from the database
+    const product = await db.delete(products).where(eq(products.id, productId));
+
+    // Return the product by ID with a 200 status
+    return new Response(null, { status: 204 });
   } catch (err) {
     // Log the error for debugging
     console.error("Error fetching product:", err);

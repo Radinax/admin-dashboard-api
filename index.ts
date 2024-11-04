@@ -19,8 +19,9 @@ app.use(
     origin: "http://localhost:5173", // Change to ENV
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
-    exposeHeaders: ["Content-Length"],
+    exposeHeaders: ["Content-Length", "X-Kuma-Revision"],
     maxAge: 86400,
+    credentials: true,
   })
 );
 

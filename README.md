@@ -27,8 +27,16 @@ bun run server
 To run initial migrations:
 
 ```bash
-bun drizzle-kit generate
+bun drizzle-migration
 ```
+
+To run drizzle studio:
+
+```bash
+bun drizzle-studio
+```
+
+These last two are scripts inside package json.
 
 ## Loop
 
