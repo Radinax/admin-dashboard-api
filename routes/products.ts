@@ -3,8 +3,15 @@ import { Hono } from "hono";
 import { db } from "../db";
 import { products } from "../db/schema";
 import { getCookie } from "hono/cookie";
-import { eq } from "drizzle-orm";
+import { avg, count, eq, max, min, sql } from "drizzle-orm";
 import { productSchema } from "../schema";
+
+type summary = {
+  averagePrice: number;
+  highestPrice: number;
+  lowestPrice: number;
+  productTypes: number;
+}[];
 
 const router = new Hono();
 
@@ -66,6 +73,40 @@ router.get("/", async (c) => {
 });
 
 /**
+ * @api     GET /products/summary
+ * @desc    Get product summary (average price, highest price, lowest price, product types)
+ * @access  Private
+ */
+router.get("/summary", async (c) => {
+  const userId = getCookie(c, "session");
+
+  try {
+    // Validate userId
+    if (!userId) {
+      return c.text("User not authenticated", 401);
+    }
+
+    // Perform the aggregation query using Drizzle's built-in functions
+    const summary = await db
+      .select({
+        averagePrice: avg(products.price).mapWith(Number), // Use Drizzle's `avg` function
+        highestPrice: max(products.price).mapWith(Number), // Use Drizzle's `max` function
+        lowestPrice: min(products.price).mapWith(Number), // Use Drizzle's `min` function
+        productTypes: count(products.type).mapWith(Number), // Use Drizzle's `count` function
+      })
+      .from(products);
+
+    console.log("Summary:", summary);
+
+    // Return the summary data
+    return c.json(summary[0], 200);
+  } catch (err) {
+    console.error("Error fetching product summary:", err);
+    return c.text("Error fetching product summary", 500);
+  }
+});
+
+/**
  * @api     GET /products/:id
  * @desc    Get product by id
  * @access  Private
@@ -103,7 +144,7 @@ router.get("/:id", async (c) => {
  * @desc    DELETE product by id
  * @access  Private
  */
-router.get("/:id", async (c) => {
+router.delete("/:id", async (c) => {
   const userId = getCookie(c, "session");
   const productId = c.req.param("id"); // Retrieve the product ID from the URL parameters
 
@@ -116,15 +157,15 @@ router.get("/:id", async (c) => {
       return c.text("Invalid product ID format", 400);
     }
 
-    // Fetch all products from the database
-    const product = await db.delete(products).where(eq(products.id, productId));
+    // Delete product from the database
+    await db.delete(products).where(eq(products.id, productId));
 
-    // Return the product by ID with a 200 status
+    // Return status 204
     return new Response(null, { status: 204 });
   } catch (err) {
     // Log the error for debugging
     console.error("Error fetching product:", err);
-    return c.text("Error fetching product", 500);
+    return c.text("Error deleting product", 500);
   }
 });
 

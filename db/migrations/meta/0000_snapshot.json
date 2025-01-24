@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "50d60996-957d-4c3b-8b4d-84c3e55b7827",
+  "id": "87b8c9a1-9ff5-40ea-b7bd-5a16b9840458",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "order": {
@@ -128,6 +128,64 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "product_warehouse": {
+      "name": "product_warehouse",
+      "columns": {
+        "product_id": {
+          "name": "product_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "warehouse_id": {
+          "name": "warehouse_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "product_warehouse_product_id_product_id_fk": {
+          "name": "product_warehouse_product_id_product_id_fk",
+          "tableFrom": "product_warehouse",
+          "tableTo": "product",
+          "columnsFrom": [
+            "product_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "product_warehouse_warehouse_id_warehouse_id_fk": {
+          "name": "product_warehouse_warehouse_id_warehouse_id_fk",
+          "tableFrom": "product_warehouse",
+          "tableTo": "warehouse",
+          "columnsFrom": [
+            "warehouse_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "product_warehouse_product_id_warehouse_id_pk": {
+          "columns": [
+            "product_id",
+            "warehouse_id"
+          ],
+          "name": "product_warehouse_product_id_warehouse_id_pk"
+        }
+      },
+      "uniqueConstraints": {}
+    },
     "user": {
       "name": "user",
       "columns": {
@@ -190,6 +248,101 @@
           "isUnique": true
         }
       },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "user_warehouse": {
+      "name": "user_warehouse",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "warehouse_id": {
+          "name": "warehouse_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "permission": {
+          "name": "permission",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_warehouse_user_id_user_id_fk": {
+          "name": "user_warehouse_user_id_user_id_fk",
+          "tableFrom": "user_warehouse",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_warehouse_warehouse_id_warehouse_id_fk": {
+          "name": "user_warehouse_warehouse_id_warehouse_id_fk",
+          "tableFrom": "user_warehouse",
+          "tableTo": "warehouse",
+          "columnsFrom": [
+            "warehouse_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "user_warehouse_user_id_warehouse_id_pk": {
+          "columns": [
+            "user_id",
+            "warehouse_id"
+          ],
+          "name": "user_warehouse_user_id_warehouse_id_pk"
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "warehouse": {
+      "name": "warehouse",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}

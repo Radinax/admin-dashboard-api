@@ -149,4 +149,4 @@ export const productsWarehousesRelations = relations(
 export type DatabaseUserType = InferSelectModel<typeof users>;
 export type DatabaseProductType = InferSelectModel<typeof products>;
 export type DatabaseWarehouseType = InferSelectModel<typeof warehouses>;
-export type DatabaseOrderType = InferSelectModel<typeof orders>;
+// export type DatabaseOrderType = InferSelectModel<typeof orders>;
