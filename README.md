@@ -1,140 +1,153 @@
-# api-bun-hono
+# Admin Dashboard API
 
-Personal backend stack for private SAAS projects as a showcase for new members.
+A modern, high-performance backend API built with Bun and Hono for managing products and users in an admin dashboard system. This project showcases a robust architecture using cutting-edge technologies for building scalable SAAS applications.
 
-## Introduction
+## 🚀 Features
 
-Uses a stack of Bun, Hono, SQlite, DrizzleORM.
+- **Authentication System**
+  - User registration with email validation
+  - Secure login with session management
+  - Password hashing using Argon2id
+  - Role-based access control (Admin/User)
 
-This API contains a dashboard logic to be consumed in the [Frontend](https://github.com/Radinax/admin-dashboard-web), this stack makes it very easy to create a backend system for small to medium apps.
+- **Product Management**
+  - CRUD operations for products
+  - Category-based organization
+  - Stock tracking and alerts
+  - Advanced product statistics
+  - Multi-type product support (Electronics, Clothing, Furniture, Food)
 
-It contains authentications like login, logout and register, plus adding/removing/editing/reading a set of products inside a warehouse.
+- **Data Validation & Security**
+  - Request validation using Zod
+  - Type-safe database operations with DrizzleORM
+  - SQLite with WAL mode for better concurrency
+  - CORS protection
 
-## Install
+## 🛠️ Tech Stack
 
-To install dependencies:
+- **[Bun](https://bun.sh)** - Ultra-fast JavaScript runtime and package manager
+- **[Hono](https://hono.dev)** - Lightweight, ultrafast web framework
+- **[DrizzleORM](https://orm.drizzle.team)** - TypeScript ORM with great developer experience
+- **[SQLite](https://www.sqlite.org)** - Reliable, embedded database
+- **[Zod](https://zod.dev)** - TypeScript-first schema validation
 
-```bash
-bun install
-```
+## 📦 Installation
 
-To run:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/admin-dashboard-api.git
+   cd admin-dashboard-api
+   ```
 
+2. Install dependencies:
+   ```bash
+   bun install
+   ```
+
+3. Generate and apply database migrations:
+   ```bash
+   bun drizzle-kit generate
+   bun drizzle-kit migrate
+   ```
+
+## 🚀 Running the Application
+
+Start the development server:
 ```bash
 bun run server
 ```
 
-To run initial migrations:
+The API will be available at `http://localhost:5000`.
 
-```bash
-bun drizzle-migration
-```
+## 📝 API Documentation
 
-To run drizzle studio:
+### Authentication Endpoints
 
-```bash
-bun drizzle-studio
-```
-
-These last two are scripts inside package json.
-
-## Loop
-
-Create DB Schema in `@db/schema.ts`:
-
-```javascript
-export const users = sqliteTable("user", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => cuid()),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  email: text("email").notNull().unique(),
-  permission: text("permission")
-    .$type<Permission>()
-    .$defaultFn(() => "user"),
-  location: point("location"),
-});
-```
-
-Export DB type in the same file:
-
-```javascript
-export type DatabaseUserType = InferSelectModel<typeof users>;
-```
-
-Create the zod schema in `@schema/user-schema`:
-
-```javascript
-import { z } from "zod";
-
-export const userSchema = z.object({
-  username: z
-    .string()
-    .min(3, "Username must be at least 3 characters long")
-    .max(20, "Username must not exceed 20 characters")
-    .regex(
-      /^[a-zA-Z0-9_]+$/,
-      "Username can only contain letters, numbers, and underscores"
-    )
-    .optional(),
-
-  email: z.string().email("Invalid email address"), // Validates email format
-
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters long")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number")
-    .regex(/[\W_]/, "Password must contain at least one special character"),
-});
-
-// Type inference for TypeScript
-export type User = z.infer<typeof userSchema>;
-```
-
-Create the routes in `@routes/users`:
-
-```javascript
-const router = new Hono();
-
-/**
- * @api     GET /me
- * @desc    Retrieves current user data
- * @access  Private
- */
-router.get("/me", async (c) => {
-  const userId = getCookie(c, "session");
-
-  if (!userId) {
-    return c.body("User not found", HttpStatusCode.NotFound);
+- **POST** `/signup`
+  ```typescript
+  {
+    "email": "admin@admin.com",
+    "password": "Admin345678.",
+    "username": "admin"
   }
+  ```
 
-  const existingUser = await db.query.users.findFirst({
-    where(fields, { eq }) {
-      return eq(fields.id, userId);
-    },
-  });
-
-  if (!existingUser) {
-    return c.body("User already exists", HttpStatusCode.NotFound);
+- **POST** `/signin`
+  ```typescript
+  {
+    "email": "admin@admin.com",
+    "password": "Admin345678."
   }
+  ```
 
-  return c.json({
-    username: existingUser.username,
-    sessionId: existingUser.id,
-    email: existingUser.email,
-  });
-});
+- **POST** `/signout`
+- **GET** `/me`
+
+### Product Endpoints
+
+- **POST** `/products/create`
+  ```typescript
+  {
+    "name": "Product Name",
+    "type": "electronics" | "clothing" | "furniture" | "food",
+    "price": 999.99,
+    "description": "Product description",
+    "category": "smartphones" | "laptops" | "accessories" | ...,
+    "stock": 100
+  }
+  ```
+
+- **GET** `/products` - List all products
+- **GET** `/products/summary` - Get product statistics
+- **GET** `/products/:id` - Get product details
+- **PUT** `/products/:id` - Update product
+- **DELETE** `/products/:id` - Delete product
+
+## 🏗️ Project Structure
+
+```
+admin-dashboard-api/
+├── db/
+│   ├── migrations/    # Database migrations
+│   ├── schema.ts     # Database schema definitions
+│   └── index.ts      # Database configuration
+├── routes/
+│   ├── products.ts   # Product routes
+│   └── users.ts      # User routes
+├── schema/
+│   ├── product-schema.ts  # Product validation
+│   └── user-schema.ts     # User validation
+├── types/            # TypeScript type definitions
+├── utils/            # Utility functions
+├── index.ts         # Application entry point
+└── drizzle.config.ts # DrizzleORM configuration
 ```
 
-Finally export the `router` to be used in `index.ts` file.
+## 🔧 Development Tools
 
-## Conclusion
+- View database contents:
+  ```bash
+  bun drizzle-studio
+  ```
 
-This repo contains an example of how to create an API node backend service using Bun, Hono, DrizzleORM and SQLite. Its much faster since you avoid the chore of installing all the dependencies and configurations needed to create a normal node/express backend with typescript, this has everything we need to start working.
+- Generate new migrations:
+  ```bash
+  bun drizzle-kit generate
+  ```
 
-Article writen by me explaining the code: https://adrian-beria-blog.netlify.app/blog/69_creating-a-backend-with-bun-and-hono/
+## 🤝 Contributing
 
-**Made by Engineer Adrian Beria**
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📚 Related Resources
+
+- [Frontend Repository](https://github.com/Radinax/admin-dashboard-web)
+- [Blog Post: Creating a Backend with Bun and Hono](https://adrian-beria-blog.netlify.app/blog/69_creating-a-backend-with-bun-and-hono/)
+
+---
+
+**Built with ❤️ by [Adrian Beria](https://github.com/Radinax)**
