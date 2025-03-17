@@ -18,7 +18,8 @@ router.post("/create", zValidator("json", productSchema), async (c) => {
   const userId = getCookie(c, "session");
 
   // Destructure the validated request body
-  const { name, type, price, description, category, stock } = c.req.valid("json");
+  const { name, type, price, description, category, stock } =
+    c.req.valid("json");
 
   try {
     // Validate userId
@@ -37,7 +38,7 @@ router.post("/create", zValidator("json", productSchema), async (c) => {
         category: category as ProductCategory,
         stock,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       })
       .returning();
 
@@ -100,10 +101,13 @@ router.get("/summary", async (c) => {
       .from(products)
       .where(sql`${products.stock} <= 10`);
 
-    return c.json({
-      ...productStats,
-      lowStockProducts: lowStockStats.lowStockProducts
-    }, 200);
+    return c.json(
+      {
+        ...productStats,
+        lowStockProducts: lowStockStats.lowStockProducts,
+      },
+      200
+    );
   } catch (err) {
     console.error("Error fetching product summary:", err);
     return c.text("Error fetching product summary", 500);
@@ -151,7 +155,8 @@ router.get("/:id", async (c) => {
 router.put("/:id", zValidator("json", productSchema), async (c) => {
   const userId = getCookie(c, "session");
   const productId = c.req.param("id");
-  const { name, type, price, description, category, stock } = c.req.valid("json");
+  const { name, type, price, description, category, stock } =
+    c.req.valid("json");
 
   try {
     if (!userId) {
@@ -170,7 +175,7 @@ router.put("/:id", zValidator("json", productSchema), async (c) => {
         description,
         category: category as ProductCategory,
         stock,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       })
       .where(eq(products.id, productId))
       .returning();

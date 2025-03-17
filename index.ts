@@ -31,3 +31,5 @@ export default {
   port: 5000,
   fetch: app.fetch,
 };
+
+export { app };
