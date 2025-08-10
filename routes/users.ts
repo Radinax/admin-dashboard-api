@@ -48,24 +48,73 @@ router.post("/signup", zValidator("json", userSchema), async (c) => {
   const hashedPassword = await Bun.password.hash(password, "argon2id");
 
   const existingEmail = await db.query.users.findFirst({
-    where(fields, { eq }) {
-      return eq(fields.email, email);
-    },
+    where: (fields, { eq }) => eq(fields.email, email),
   });
 
   if (existingEmail) {
-    return c.body("Email is already on use", HttpStatusCode.NotFound);
+    return c.json(
+      { error: "An account with this email already exists." },
+      HttpStatusCode.Conflict
+    );
   }
 
   try {
-    await db
+    const [newUser] = await db
       .insert(users)
-      .values({ username: username ?? email, password: hashedPassword, email });
-    return c.body("User created successfully", HttpStatusCode.Created);
+      .values({
+        username: username ?? email,
+        email,
+        password: hashedPassword,
+      })
+      .returning({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+      });
+
+    // Set session cookie (for "login after signup")
+    setCookie(c, "session", newUser.id, {
+      path: "/",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 86400,
+      sameSite: "lax",
+    });
+
+    // 5. Return minimal user info + success
+    return c.json(
+      {
+        message: "User created successfully",
+        user: {
+          id: newUser.id,
+          username: newUser.username,
+          email: newUser.email,
+        },
+      },
+      HttpStatusCode.Created // 201 Created is correct for creation
+    );
   } catch (err) {
-    console.error(err);
-    const error = err as CustomError;
-    return c.body(error.message, HttpStatusCode.InternalServerError);
+    console.error("Signup error:", err);
+
+    // Handle known DB errors (e.g., unique constraint on username)
+    if (err instanceof Error) {
+      if (err.message.includes("UNIQUE constraint failed")) {
+        return c.json(
+          { error: "Username is already taken." },
+          HttpStatusCode.Conflict
+        );
+      }
+      // Generic fallback
+      return c.json(
+        { error: "Failed to create account. Please try again later." },
+        HttpStatusCode.InternalServerError
+      );
+    }
+
+    return c.json(
+      { error: "An unexpected error occurred." },
+      HttpStatusCode.InternalServerError
+    );
   }
 });
 
@@ -76,14 +125,21 @@ router.post("/signup", zValidator("json", userSchema), async (c) => {
  */
 router.post("/signin", zValidator("json", userSchema), async (c) => {
   const { password, email } = c.req.valid("json");
+
   const existingUser = await db.query.users.findFirst({
-    where(fields, { eq }) {
-      return eq(fields.email, email);
+    where: (fields, { eq }) => eq(fields.email, email),
+    columns: {
+      id: true,
+      username: true,
+      email: true,
+      password: true,
     },
   });
 
   if (!existingUser) {
-    return c.body("User input is not valid", HttpStatusCode.NotFound);
+    // Simulate work to prevent timing leaks
+    await Bun.password.hash("fake", "argon2id"); // dummy hash
+    return c.body("Invalid credentials", HttpStatusCode.Unauthorized);
   }
 
   const passwordMatch = await Bun.password.verify(
@@ -93,19 +149,20 @@ router.post("/signin", zValidator("json", userSchema), async (c) => {
   );
 
   if (!passwordMatch) {
-    return c.body("User input is not valid", HttpStatusCode.NotFound);
+    return c.body("Invalid credentials", HttpStatusCode.Unauthorized);
   }
 
   setCookie(c, "session", existingUser.id, {
     path: "/",
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    maxAge: 86400,
+    maxAge: 86400, //24 hours
+    sameSite: "lax", // prevent CSRF
   });
 
   return c.json(
     { username: existingUser.username, email, id: existingUser.id },
-    HttpStatusCode.Created
+    HttpStatusCode.OK
   );
 });
 
